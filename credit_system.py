@@ -1,6 +1,7 @@
 class CreditCard:
-    def __init__(self, card_number, credit_limit, balance=0):
+    def __init__(self, card_number, uid, credit_limit, balance=0):
         self.card_number = card_number
+        self.uid = uid
         self.credit_limit = credit_limit
         self.balance = balance
 
@@ -27,4 +28,4 @@ class CreditCard:
             print("Invalid amount for payment.")
 
     def print_balance(self):
-        print(f"Credit Card {self.card_number} balance: {self.balance}")
+        print(f"Credit Card no. {self.card_number} => Current Bill : {self.balance}")

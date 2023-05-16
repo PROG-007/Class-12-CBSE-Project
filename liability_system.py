@@ -1,6 +1,7 @@
 class BankAccount:
-    def __init__(self, account_number, balance=0):
+    def __init__(self, account_number, uid, balance=0):
         self.account_number = account_number
+        self.uid = uid
         self.balance = balance
 
     def deposit(self, amount):
@@ -23,4 +24,5 @@ class BankAccount:
             print("Invalid amount for withdrawal.")
 
     def print_balance(self):
-        print(f"Account {self.account_number} balance: {self.balance}")
+        print(f"Account no. {self.account_number} => Current Balance : {self.balance}")
+
