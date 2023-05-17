@@ -3,7 +3,6 @@ import user_system as us
 
 User = us.User
 
-
 def print_auth_menu():
     print("1. Login")
     print("2. Create New Account")
