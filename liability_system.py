@@ -1,7 +1,8 @@
 class BankAccount:
-    def __init__(self, account_number, uid, balance=0):
+    def __init__(self, account_number, uid, withdraw_limit, balance=0):
         self.account_number = account_number
         self.uid = uid
+        self.withdraw_limit = withdraw_limit
         self.balance = balance
 
     def deposit(self, amount):
@@ -14,12 +15,14 @@ class BankAccount:
 
     def withdraw(self, amount):
         if amount > 0:
-            if self.balance >= amount:
+            if self.balance <= amount:
+                print("Insufficient funds.")
+            elif self.withdraw < amount:
+                print("Exceeded withdrawal limit.")
+            else:
                 self.balance -= amount
                 print(f"Withdrew {amount} from Account {self.account_number}.")
                 self.print_balance()
-            else:
-                print("Insufficient funds.")
         else:
             print("Invalid amount for withdrawal.")
 

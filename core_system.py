@@ -1,42 +1,46 @@
 import os
-import user_system as us
+import db_mnger_cls
+import liability_system
+import credit_system
+import user_system
 
-User = us.User
+Database = db_mnger_cls.Database
+BankAccount = liability_system.BankAccount
+CreditCard = credit_system.CreditCard
+User = user_system.User
+
 
 def print_auth_menu():
     print("1. Login")
     print("2. Create New Account")
     print("3. Exit")
 
-def handle_login(users):
+
+def handle_login(database):
     email_input = input("Enter your email: ")
     password_input = input("Enter your password: ")
 
-    for user in users:
-        if user.login(email_input, password_input):
-            print("Welcome!")
-            return user
-
-    print("Login failed.")
-    return None
-
-def handle_signup(users):
+    uid = database.get_user(email_input, password_input)
+    if uid is not None:
+        print("Login successful.")
+        return uid
+    else:
+        print("Invalid login credentials.")
+        return None
 
 
+def handle_signup(database):
     email_input = input("Enter your email: ")
     password_input = input("Enter your password: ")
 
-    for user in users:
-        if email_input == user.email:
-            print("Email already exists. Please login.")
-            return None
-        
-    new_user = User(email_input, password_input)
-    users.append(new_user)
+    uid = database.insert_user(email_input, password_input)
+    if uid is not None:
+        print("Account created successfully.")
+        return uid
+    else:
+        print("Failed to create an account.")
+        return None
 
-    print("Account created successfully.")
-    print("Welcome!")
-    return new_user
 
 def print_main_menu():
     print("\nMain Menu:")
@@ -44,7 +48,25 @@ def print_main_menu():
     print("2. Manage Credit Card")
     print("3. Logout")
 
-def handle_main_menu(user):
+
+def handle_main_menu(database, uid):
+    bank_account = None
+    credit_card = None
+
+    # Retrieve account details from the database
+    account_details = database.get_account(uid)
+    if account_details is not None:
+        account_number, withdraw_limit, balance = account_details
+        bank_account = BankAccount(
+            account_number, uid, withdraw_limit, balance)
+
+    # Create a temporary CreditCard object (does not retrieve from database)
+    credit_card = CreditCard("", uid, 2500000, 250000)
+
+    user = User("", "", uid)
+    user.bank_account = bank_account
+    user.credit_card = credit_card
+
     while True:
         print_main_menu()
         account_choice = int(input("Enter your choice: "))
@@ -57,7 +79,7 @@ def handle_main_menu(user):
             break
         else:
             print("Invalid choice. Please try again.")
-        next()
+
 
 def print_bank_account_menu():
     print("\nBank Account Menu:")
@@ -66,6 +88,7 @@ def print_bank_account_menu():
     print("3. Check Balance")
     print("4. Print Account Details")
     print("5. Back")
+
 
 def handle_bank_account_menu(user):
     while True:
@@ -87,7 +110,7 @@ def handle_bank_account_menu(user):
             break
         else:
             print("Invalid choice. Please try again.")
-        next()
+
 
 def print_credit_card_menu():
     print("\nCredit Card Menu:")
@@ -95,6 +118,7 @@ def print_credit_card_menu():
     print("2. Charge")
     print("3. Check Total Due Bill")
     print("4. Back")
+
 
 def handle_credit_card_menu(user):
     while True:
@@ -113,38 +137,42 @@ def handle_credit_card_menu(user):
             break
         else:
             print("Invalid choice. Please try again.")
-        next()
 
-users = [
-    User("user1@example.com", "password1"),
-    User("user2@example.com", "password2"),
-]
+
+# Create an instance of the Database class
+database = Database()
+
 
 def next():
     os.system('PAUSE')
     os.system('cls')
 
+
 def cls():
     os.system('cls')
 
+
 cls()
+
+
 
 while True:
     print_auth_menu()
     choice = int(input("Enter your choice: "))
 
     if choice == 1:
-        user = handle_login(users)
-        if user is not None:
-            handle_main_menu(user)
+        uid = handle_login(database)
+        if uid is not None:
+            handle_main_menu(database, uid)
 
     elif choice == 2:
-        new_user = handle_signup(users)
-        if new_user is not None:
-            handle_main_menu(new_user)
+        uid = handle_signup(database)
+        if uid is not None:
+            handle_main_menu(database, uid)
 
     elif choice == 3:
         break
     else:
         print("Invalid choice. Please try again.")
-    next()
+
+database.close()
