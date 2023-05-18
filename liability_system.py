@@ -27,5 +27,5 @@ class BankAccount:
             print("Invalid amount for withdrawal.")
 
     def print_balance(self):
-        print(f"Account no. {self.account_number} => Current Balance : {self.balance}")
+        print(f"Current Balance : {self.balance}")
 

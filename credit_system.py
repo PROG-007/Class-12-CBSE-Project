@@ -32,4 +32,4 @@ class CreditCard:
 
     def print_balance(self):
         print(
-            f"Credit Card no. {self.card_number} => Current Bill : {self.balance}")
+            f"Current Bill : {self.balance}")

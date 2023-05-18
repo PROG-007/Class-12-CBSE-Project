@@ -69,8 +69,8 @@ class Database:
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
         if result:
-            card_number, credit_limit, balance = result
-            return card_number, credit_limit, balance
+            card_number, credit_limit, due = result
+            return card_number, credit_limit, due
         return None
 
     def update_credit_card_balance(self, uid, balance):

@@ -10,6 +10,7 @@ conn = pymysql.connect(
 
 cursor = conn.cursor()
 
+cursor.execute("use class12")
 cursor.execute("DELETE FROM credentials;")
 cursor.execute("DELETE FROM creditcard;")
 cursor.execute("DELETE FROM accounts;")
