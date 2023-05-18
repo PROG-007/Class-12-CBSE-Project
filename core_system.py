@@ -36,6 +36,16 @@ def handle_signup(database):
     uid = database.insert_user(email_input, password_input)
     if uid is not None:
         print("Account created successfully.")
+        print("###Account SETUP###")
+        withdraw_limit = float(input("Enter the withdraw limit: "))
+        balance = float(input("Enter the initial balance: "))
+        database.insert_account(uid, withdraw_limit, balance)
+        print("###Credit Card SETUP###")
+        credit_limit = float(input("Enter the credit limit: "))
+        spend_limit = float(input("Enter the spend limit: "))
+        database.insert_credit_card(
+            uid , credit_limit, spend_limit, 0)
+
         return uid
     else:
         print("Failed to create an account.")
@@ -72,9 +82,9 @@ def handle_main_menu(database, uid):
         account_choice = int(input("Enter your choice: "))
 
         if account_choice == 1:
-            handle_bank_account_menu(user)
+            handle_bank_account_menu(user, database)
         elif account_choice == 2:
-            handle_credit_card_menu(user)
+            handle_credit_card_menu(user, database)
         elif account_choice == 3:
             break
         else:
@@ -90,7 +100,7 @@ def print_bank_account_menu():
     print("5. Back")
 
 
-def handle_bank_account_menu(user):
+def handle_bank_account_menu(user, database):
     while True:
         print_bank_account_menu()
         bank_choice = int(input("Enter your choice: "))
@@ -98,11 +108,19 @@ def handle_bank_account_menu(user):
         if bank_choice == 1:
             amount = float(input("Enter the amount to withdraw: "))
             user.bank_account.withdraw(amount)
+            database.update_account_balance(
+                user.uid, user.bank_account.balance)
         elif bank_choice == 2:
             amount = float(input("Enter the amount to deposit: "))
             user.bank_account.deposit(amount)
+            database.update_account_balance(
+                user.uid, user.bank_account.balance)
         elif bank_choice == 3:
-            user.bank_account.print_balance()
+            account_number, withdraw_limit, balance = database.get_account(
+                user.uid)
+            print("Account Number:", account_number)
+            print("Withdraw Limit:", withdraw_limit)
+            print("Current Balance:", balance)
         elif bank_choice == 4:
             print("Account Number:", user.bank_account.account_number)
             user.bank_account.print_balance()
@@ -120,7 +138,7 @@ def print_credit_card_menu():
     print("4. Back")
 
 
-def handle_credit_card_menu(user):
+def handle_credit_card_menu(user, database):
     while True:
         print_credit_card_menu()
         credit_choice = int(input("Enter your choice: "))
@@ -128,11 +146,17 @@ def handle_credit_card_menu(user):
         if credit_choice == 1:
             amount = float(input("Enter the amount to pay: "))
             user.credit_card.pay(amount)
+            user.credit_card.update_balance()
         elif credit_choice == 2:
             amount = float(input("Enter the amount to charge: "))
             user.credit_card.charge(amount)
+            user.credit_card.update_balance()
         elif credit_choice == 3:
-            print("Total Due Bill:", user.credit_card.balance)
+            card_number, credit_limit, balance = database.get_credit_card(
+                user.uid)
+            print("Card Number:", card_number)
+            print("Credit Limit:", credit_limit)
+            print("Current Balance:", balance)
         elif credit_choice == 4:
             break
         else:
@@ -153,8 +177,6 @@ def cls():
 
 
 cls()
-
-
 
 while True:
     print_auth_menu()
