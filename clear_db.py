@@ -2,10 +2,10 @@ import pymysql
 import project_secrets
 
 conn = pymysql.connect(
-    host="localhost",
-    user="root",
-    password=project_secrets.secrectsDict["passworddb"],
-    database="class12"
+    host='localhost',
+    user=project_secrets.databaseSecrets["user"],
+    password=project_secrets.databaseSecrets["password"],
+    database=project_secrets.databaseSecrets["database"]
 )
 
 cursor = conn.cursor()

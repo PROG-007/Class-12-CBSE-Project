@@ -9,7 +9,6 @@ class BankAccount:
         if amount > 0:
             self.balance += amount
             print(f"Deposited {amount} to Account {self.account_number}.")
-            self.print_balance()
         else:
             print("Invalid amount for deposit.")
 
@@ -17,15 +16,10 @@ class BankAccount:
         if amount > 0:
             if self.balance <= amount:
                 print("Insufficient funds.")
-            elif self.withdraw < amount:
+            elif self.withdraw_limit < amount:
                 print("Exceeded withdrawal limit.")
             else:
                 self.balance -= amount
                 print(f"Withdrew {amount} from Account {self.account_number}.")
-                self.print_balance()
         else:
             print("Invalid amount for withdrawal.")
-
-    def print_balance(self):
-        print(f"Current Balance : {self.balance}")
-

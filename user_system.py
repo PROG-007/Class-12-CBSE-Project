@@ -12,11 +12,3 @@ class User:
             f"{random.randint(10000000,99999999)}", self.uid, 100000, 10000)
         self.credit_card = c.CreditCard(
             f"{random.randint(1000,9999)}-{random.randint(1000,9999)}-{random.randint(1000,9999)}-{random.randint(1000,9999)}", self.uid, 2500000, 250000)
-
-    def login(self, email, password):
-        if email == self.email and password == self.password:
-            print(f"Login successful. {self.uid}")
-            return True
-        else:
-            print("Invalid login credentials.")
-            return False
