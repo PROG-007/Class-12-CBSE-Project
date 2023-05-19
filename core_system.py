@@ -21,12 +21,12 @@ def handle_login(database):
     email_input = input("Enter your email: ")
     password_input = input("Enter your password: ")
 
-    uid, message = database.get_user(email_input, password_input)
+    uid = database.get_user(email_input, password_input)
     if uid is not None:
         print("Login successful.")
         return uid, email_input, password_input
     else:
-        print(f"Failed to login : {message}")
+        print(f"Incorrect credentials.")
         return None, email_input, password_input
 
 
@@ -35,7 +35,7 @@ def handle_signup(database):
     email_input = input("Enter your email: ")
     password_input = input("Enter your password: ")
 
-    uid, message = database.insert_user(email_input, password_input)
+    uid = database.insert_user(email_input, password_input)
     if uid is not None:
         print("Account created successfully.")
         print("\n### Account SETUP ###")
@@ -51,7 +51,7 @@ def handle_signup(database):
 
         return uid, email_input, password_input
     else:
-        print(f"Failed to create an account : {message}")
+        print(f"Failed to create an account")
         return None, email_input, password_input
 
 
@@ -114,10 +114,16 @@ def handle_bank_account_menu(user, database):
         print_bank_account_menu()
         bank_choice = int(input("Enter your choice: "))
         if bank_choice == 1:
-            amount = float(input("Enter the amount to withdraw: "))
-            user.bank_account.withdraw(amount)
-            database.update_account_balance(
-                user.uid, user.bank_account.balance)
+            amount=0
+            temp1 = float(input("Enter the amount to withdraw: "))
+            temp2 = float(input("Re-Confirm the withdrawal amount: "))
+            if temp1!=temp2:
+                print("Amount entered does not match.")
+            else:
+                amount=temp1
+                user.bank_account.withdraw(amount)
+                database.update_account_balance(
+                    user.uid, user.bank_account.balance)
         elif bank_choice == 2:
             amount = float(input("Enter the amount to deposit: "))
             user.bank_account.deposit(amount)
@@ -198,5 +204,6 @@ while True:
         break
     else:
         print("Invalid choice. Please try again.")
+    next()
 
 database.close()

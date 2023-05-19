@@ -25,7 +25,7 @@ class Database:
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
         if result:
-            return None, "User with the same email already exists."
+            return None
 
         # Insert new user
         query = "INSERT INTO credentials (uid, email, password) VALUES (%s, %s, %s)"
@@ -33,7 +33,7 @@ class Database:
         values = (uid, email, password)
         self.cursor.execute(query, values)
         self.connection.commit()
-        return uid, ""
+        return uid
 
     def get_user(self, email, password):
         # Check if email and password match
@@ -43,18 +43,8 @@ class Database:
         result = self.cursor.fetchone()
         if result:
             uid = result[0]
-            return uid, ""
-        else:
-            # Check if email exists
-            query = "SELECT uid FROM credentials WHERE email=%s"
-            values = (email,)
-            self.cursor.execute(query, values)
-            result = self.cursor.fetchone()
-            if result:
-                return None, "Incorrect credentials."
-            else:
-                return None, "Provided email was not found in the registered accounts."
-
+            return uid
+        return None
     # Account Functions
 
     def insert_account(self, uid, withdraw_limit, balance):
