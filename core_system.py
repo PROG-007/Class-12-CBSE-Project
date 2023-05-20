@@ -1,13 +1,8 @@
 import os
-import db_mnger_cls
-import liability_system
-import credit_system
-import user_system
-
-Database = db_mnger_cls.Database
-BankAccount = liability_system.BankAccount
-CreditCard = credit_system.CreditCard
-User = user_system.User
+from classes.db_mnger_cls import Database
+from classes.liability_system import BankAccount
+from classes.credit_system import CreditCard
+from classes.user_system import User
 
 
 def print_auth_menu():
@@ -104,12 +99,14 @@ def print_bank_account_menu():
     print("\nBank Account Menu:")
     print("1. Withdraw")
     print("2. Deposit")
-    print("3. Print Account Details")
-    print("4. Back")
+    print("3. Transfer Money Using UID")
+    print("4. Print Account Details")
+    print("5. Back")
 
 
 def handle_bank_account_menu(user, database):
     while True:
+        user.refresh_data(database)
         cls()
         print_bank_account_menu()
         bank_choice = int(input("Enter your choice: "))
@@ -121,19 +118,37 @@ def handle_bank_account_menu(user, database):
                 print("Amount entered does not match.")
             else:
                 amount=temp1
-                user.bank_account.withdraw(amount)
-                database.update_account_balance(
-                    user.uid, user.bank_account.balance)
+                _=user.bank_account.withdraw(amount)
+                print(_)
+                database.update_account_balance(user.uid, user.bank_account.balance)
         elif bank_choice == 2:
             amount = float(input("Enter the amount to deposit: "))
-            user.bank_account.deposit(amount)
+            _=user.bank_account.deposit(amount)
+            print(_)
             database.update_account_balance(
                 user.uid, user.bank_account.balance)
         elif bank_choice == 3:
+            recipient_uid = input("Enter the recipient's UID: ")
+            amount = 0
+            temp1 = float(input("Enter the amount to transfer: "))
+            temp2 = float(input("Re-Confirm the transfer amount: "))
+            if temp1!=temp2:
+                print("Amount entered does not match.")
+            else:
+                prev_balance = user.bank_account.balance
+                amount = temp1
+                user.bank_account.withdraw(amount)
+                result = database.transfer_money(uid, recipient_uid, amount)
+                if result == True:
+                    print(f"Transfer of {amount} to {recipient_uid} was succesful.")
+                else:
+                    amount = prev_balance
+                    print(f"Transfer of to {recipient_uid} NOT SUCCESSFULL - {result}")
+        elif bank_choice == 4:
             print("Account Number:", user.bank_account.account_number)
             print("Withdraw Limit:", user.bank_account.withdraw_limit)
             print("Current Balance:", user.bank_account.balance)
-        elif bank_choice == 4:
+        elif bank_choice == 5:
             break
         else:
             print("Invalid choice. Please try again.")
@@ -150,6 +165,7 @@ def print_credit_card_menu():
 
 def handle_credit_card_menu(user, database):
     while True:
+        user.refresh_data(database)
         cls()
         print_credit_card_menu()
         credit_choice = int(input("Enter your choice: "))

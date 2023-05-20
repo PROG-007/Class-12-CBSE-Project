@@ -1,7 +1,6 @@
 import pymysql
 import random
-import project_secrets
-
+from classes import project_secrets
 
 class Database:
     def __init__(self):
@@ -68,6 +67,32 @@ class Database:
         values = (balance, uid)
         self.cursor.execute(query, values)
         self.connection.commit()
+
+    def transfer_money(self, sender_uid, recipient_uid, amount):
+        # Check if sender has sufficient balance
+        sender_account = self.get_account(sender_uid)
+        if sender_account:
+            _, _, sender_balance = sender_account
+            if sender_balance >= amount:
+                # Update sender's balance
+                sender_new_balance = sender_balance - amount
+                self.update_account_balance(sender_uid, sender_new_balance)
+
+                # Update recipient's balance
+                recipient_account = self.get_account(recipient_uid)
+                if recipient_account:
+                    _, _, recipient_balance = recipient_account
+                    recipient_new_balance = recipient_balance + amount
+                    self.update_account_balance(recipient_uid, recipient_new_balance)
+
+                    return True
+                else:
+                    return "Recipient account not found."
+            else:
+                return "Insufficient balance."
+        else:
+            return "Sender account not found."
+
 
     # Credit Card Functions
 

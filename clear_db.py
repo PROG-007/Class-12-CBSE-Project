@@ -1,5 +1,5 @@
 import pymysql
-import project_secrets
+from classes import project_secrets
 
 conn = pymysql.connect(
     host='localhost',
