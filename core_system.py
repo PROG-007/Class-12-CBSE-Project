@@ -1,7 +1,5 @@
 import os
 from classes.db_mnger_cls import Database
-from classes.liability_system import BankAccount
-from classes.credit_system import CreditCard
 from classes.user_system import User
 
 
@@ -59,26 +57,8 @@ def print_main_menu(uid):
 
 
 def handle_main_menu(database, uid, email_input, password_input):
-    bank_account = None
-    credit_card = None
-
-    # Retrieve account details from the database
-    account_details = database.get_account(uid)
-    if account_details is not None:
-        account_number, withdraw_limit, balance = account_details
-        bank_account = BankAccount(
-            account_number, uid, withdraw_limit, balance)
-
-    # Retrieve credit card details from the database
-    credit_card = database.get_credit_card(uid)
-    if credit_card is not None:
-        card_number, credit_limit, spend_limit, due = credit_card
-        credit_card = CreditCard(
-            card_number, uid, credit_limit, spend_limit, due)
 
     user = User(email_input, password_input, uid)
-    user.bank_account = bank_account
-    user.credit_card = credit_card
 
     while True:
         cls()
@@ -106,53 +86,77 @@ def print_bank_account_menu():
 
 def handle_bank_account_menu(user, database):
     while True:
-        user.refresh_data(database)
         cls()
         print_bank_account_menu()
         bank_choice = int(input("Enter your choice: "))
+
         if bank_choice == 1:
-            amount=0
+            amount = 0
             temp1 = float(input("Enter the amount to withdraw: "))
             temp2 = float(input("Re-Confirm the withdrawal amount: "))
-            if temp1!=temp2:
+            if temp1 != temp2:
                 print("Amount entered does not match.")
             else:
-                amount=temp1
-                _=user.bank_account.withdraw(amount)
-                print(_)
-                database.update_account_balance(user.uid, user.bank_account.balance)
+                amount = temp1
+                user_balance = database.get_account(user.uid)
+                if user_balance is None:
+                    print("Error: Unable to fetch account balance.")
+                elif amount > user_balance:
+                    print("Insufficient balance.")
+                elif amount > user.withdraw_limit:
+                    print("Exceeded withdrawal limit.")
+                else:
+                    success = database.update_account_balance(user.uid, user_balance - amount)
+                    if success:
+                        print("Withdrawal successful.")
+                    else:
+                        print("Error: Failed to update account balance.")
+
         elif bank_choice == 2:
             amount = float(input("Enter the amount to deposit: "))
-            _=user.bank_account.deposit(amount)
-            print(_)
-            database.update_account_balance(
-                user.uid, user.bank_account.balance)
+            user_balance = database.get_account(user.uid)
+            if user_balance is None:
+                print("Error: Unable to fetch account balance.")
+            else:
+                success = database.update_account_balance(user.uid, user_balance + amount)
+                if success:
+                    print("Deposit successful.")
+                else:
+                    print("Error: Failed to update account balance.")
+
         elif bank_choice == 3:
             recipient_uid = input("Enter the recipient's UID: ")
             amount = 0
             temp1 = float(input("Enter the amount to transfer: "))
             temp2 = float(input("Re-Confirm the transfer amount: "))
-            if temp1!=temp2:
+            if temp1 != temp2:
                 print("Amount entered does not match.")
             else:
-                prev_balance = user.bank_account.balance
                 amount = temp1
-                user.bank_account.withdraw(amount)
-                result = database.transfer_money(uid, recipient_uid, amount)
-                if result == True:
-                    print(f"Transfer of {amount} to {recipient_uid} was succesful.")
+                transfer_result = database.transfer_money(user.uid, recipient_uid, amount)
+                if transfer_result is True:
+                    print(f"Transfer of {amount} to {recipient_uid} was successful.")
                 else:
-                    amount = prev_balance
-                    print(f"Transfer of to {recipient_uid} NOT SUCCESSFULL - {result}")
+                    print(f"Transfer to {recipient_uid} NOT SUCCESSFUL - {transfer_result}")
+
         elif bank_choice == 4:
-            print("Account Number:", user.bank_account.account_number)
-            print("Withdraw Limit:", user.bank_account.withdraw_limit)
-            print("Current Balance:", user.bank_account.balance)
+            account_number, withdraw_limit, balance = database.get_account(user.uid)
+            if account_number:
+                print("Account Number:", account_number)
+                print("Withdraw Limit:", withdraw_limit)
+                print("Balance:", balance)
+            else:
+                print("Bank Account details not found for the user.")
+
         elif bank_choice == 5:
             break
+
         else:
             print("Invalid choice. Please try again.")
+
         next()
+
+
 
 
 def print_credit_card_menu():
@@ -169,26 +173,60 @@ def handle_credit_card_menu(user, database):
         cls()
         print_credit_card_menu()
         credit_choice = int(input("Enter your choice: "))
+
         if credit_choice == 1:
             amount = float(input("Enter the amount to pay: "))
-            user.credit_card.pay(amount)
-            database.update_credit_card_due(
-                user.uid, user.credit_card.due)
+            if amount > 0:
+                if user.credit_due >= amount:
+                    user.credit_due -= amount
+                    database.update_credit_card_due(user.uid, user.credit_due)
+                    print(f"Paid {amount} for due of Credit Card {user.credit_card_number}.")
+                else:
+                    print("Invalid payment amount.")
+            else:
+                print("Invalid amount for payment.")
+
         elif credit_choice == 2:
             amount = float(input("Enter the amount to charge: "))
-            user.credit_card.charge(amount)
-            database.update_credit_card_due(
-                user.uid, user.credit_card.due)
+            if amount > 0:
+                credit_card_number, credit_limit, spend_limit, due = database.get_credit_card(user.uid)
+                if credit_card_number:
+                    if due + amount > credit_limit:
+                        print("Exceeded credit limit.")
+                    elif amount > spend_limit:
+                        print("Exceeded spend limit.")
+                    else:
+                        new_credit_due = due + amount
+                        success = database.update_credit_card_due(user.uid, new_credit_due)
+                        if success:
+                            print(f"Charged {amount} to Credit Card {credit_card_number}.")
+                        else:
+                            print("Failed to update credit card due.")
+                else:
+                    print("Credit card details not found for the user.")
+            else:
+                print("Invalid amount for charge.")
+
+
         elif credit_choice == 3:
-            print("Card Number:", user.credit_card.card_number)
-            print("Credit Limit:", user.credit_card.credit_limit)
-            print("Spend Limit:", user.credit_card.spend_limit)
-            print("Current Due:", user.credit_card.due)
+            card_number, credit_limit, spend_limit, due = database.get_credit_card(user.uid)
+            if card_number:
+                print("Card Number:", card_number)
+                print("Credit Limit:", credit_limit)
+                print("Spend Limit:", spend_limit)
+                print("Current Due:", due)
+            else:
+                print("Credit card details not found for the user.")
+
+
         elif credit_choice == 4:
             break
+
         else:
             print("Invalid choice. Please try again.")
+
         next()
+
 
 
 database = Database()

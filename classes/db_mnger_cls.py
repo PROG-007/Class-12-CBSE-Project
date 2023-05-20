@@ -74,16 +74,17 @@ class Database:
         if sender_account:
             _, _, sender_balance = sender_account
             if sender_balance >= amount:
-                # Update sender's balance
-                sender_new_balance = sender_balance - amount
-                self.update_account_balance(sender_uid, sender_new_balance)
-
-                # Update recipient's balance
+                # Update recipient's and sender's balance
                 recipient_account = self.get_account(recipient_uid)
                 if recipient_account:
                     _, _, recipient_balance = recipient_account
+                    # Update recipient's balance
                     recipient_new_balance = recipient_balance + amount
                     self.update_account_balance(recipient_uid, recipient_new_balance)
+                    
+                    # Update sender's balance
+                    sender_new_balance = sender_balance - amount
+                    self.update_account_balance(sender_uid, sender_new_balance) 
 
                     return True
                 else:
