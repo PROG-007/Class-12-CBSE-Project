@@ -101,16 +101,15 @@ def handle_bank_account_menu(user, database):
                 user_balance = database.get_account(user.uid)
                 if user_balance is None:
                     print("Error: Unable to fetch account balance.")
-                elif amount > user_balance:
-                    print("Insufficient balance.")
-                elif amount > user.withdraw_limit:
-                    print("Exceeded withdrawal limit.")
                 else:
-                    success = database.update_account_balance(user.uid, user_balance - amount)
-                    if success:
-                        print("Withdrawal successful.")
+                    account_number, withdraw_limit, balance = user_balance  # Unpack balance and withdraw_limit
+                    if amount > balance:
+                        print("Insufficient balance.")
+                    elif amount > withdraw_limit:
+                        print("Exceeded withdrawal limit.")
                     else:
-                        print("Error: Failed to update account balance.")
+                        database.update_account_balance(user.uid, balance - amount)
+                        print("Deposit successful.")
 
         elif bank_choice == 2:
             amount = float(input("Enter the amount to deposit: "))
@@ -118,11 +117,9 @@ def handle_bank_account_menu(user, database):
             if user_balance is None:
                 print("Error: Unable to fetch account balance.")
             else:
-                success = database.update_account_balance(user.uid, user_balance + amount)
-                if success:
-                    print("Deposit successful.")
-                else:
-                    print("Error: Failed to update account balance.")
+                account_number, withdraw_limit, balance = user_balance  # Unpack balance and withdraw_limit
+                database.update_account_balance(user.uid, balance + amount)
+                print("Deposit successful.")
 
         elif bank_choice == 3:
             recipient_uid = input("Enter the recipient's UID: ")
