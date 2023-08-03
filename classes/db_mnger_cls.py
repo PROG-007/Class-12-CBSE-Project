@@ -11,10 +11,57 @@ class Database:
             database=project_secrets.databaseSecrets["database"]
         )
         self.cursor = self.connection.cursor()
+        self.create_database()
+        self.insert_dummy_users(15)
+        self.create_tables()
 
     def close(self):
         self.connection.close()
 
+    # Setup Functions
+    def create_database(self):
+        self.cursor.execute(f"CREATE DATABASE IF NOT EXISTS {project_secrets.databaseSecrets['database']}")
+
+    def create_tables(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS credentials (
+                uid CHAR(9) PRIMARY KEY,
+                email CHAR(100) UNIQUE,
+                password CHAR(20)
+            )
+        ''')
+        
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS accounts (
+                uid CHAR(9) PRIMARY KEY,
+                accountno INT,
+                withdrawlimit INT,
+                balance INT
+            )
+        ''')
+
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS creditcard (
+                uid CHAR(9) PRIMARY KEY,
+                cardnum INT,
+                creditlimit INT,
+                spendlimit INT,
+                due INT
+            )
+        ''')
+    
+    def insert_dummy_users(self, num_users):
+            names = [
+                "Alice", "Bob", "Charlie", "David", "Eve",
+                "Fiona", "Grace", "Hector", "Isabel", "Jack"
+            ]
+            for _ in range(num_users):
+                name = random.choice(names)
+                uid = str(random.randint(100000000, 999999999))
+                email = f"{name.lower()}@example.com"
+                password = "password123"  # You should use a secure method to generate passwords
+                self.insert_user(email, password)
+                print(f"Inserted user: {name} (UID: {uid})")
     # User Functions
 
     def insert_user(self, email, password):

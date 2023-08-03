@@ -166,7 +166,6 @@ def print_credit_card_menu():
 
 def handle_credit_card_menu(user, database):
     while True:
-        user.refresh_data(database)
         cls()
         print_credit_card_menu()
         credit_choice = int(input("Enter your choice: "))
