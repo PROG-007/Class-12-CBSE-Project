@@ -57,7 +57,7 @@ class Database:
             ]
             for _ in range(num_users):
                 name = random.choice(names)
-                uid = str(random.randint(100000000, 999999999))
+                uid = str(random.randint(100, 999))
                 email = f"{name.lower()}@example.com"
                 password = "password123"  # You should use a secure method to generate passwords
                 self.insert_user(email, password)

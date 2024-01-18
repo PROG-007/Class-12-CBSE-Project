@@ -173,10 +173,11 @@ def handle_credit_card_menu(user, database):
         if credit_choice == 1:
             amount = float(input("Enter the amount to pay: "))
             if amount > 0:
-                if user.credit_due >= amount:
-                    user.credit_due -= amount
-                    database.update_credit_card_due(user.uid, user.credit_due)
-                    print(f"Paid {amount} for due of Credit Card {user.credit_card_number}.")
+                card_number, credit_limit, spend_limit, due = database.get_credit_card(user.uid)
+                if due >= amount:
+                    due -= amount
+                    database.update_credit_card_due(user.uid, due)
+                    print(f"Paid {amount} for due of Credit Card {card_number}.")
                 else:
                     print("Invalid payment amount.")
             else:
